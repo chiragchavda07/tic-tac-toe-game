@@ -1,0 +1,35 @@
+/* .square {
+  width: 100px;
+  height: 100px;
+  background-color: cadetblue;
+  border: 1px solid black;
+  cursor: pointer;
+} */
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3498db;
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+  border: 2px solid #2980b9;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.square:hover {
+  background-color: #2980b9;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 600px) {
+  .gameboard {
+    max-width: 300px;
+  }
+
+  .square {
+    font-size: 18px;
+  }
+}
