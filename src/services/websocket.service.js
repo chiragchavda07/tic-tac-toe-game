@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
+import io from "socket.io-client";
 
 function WsService() {
-  const WS_URL = `ws://127.0.0.1:8000`;
-  return <h1>Home</h1>;
+  return io.connect("http://localhost:3001");
 }
 
 export default WsService;

@@ -1,36 +1,51 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/playerInfo.css"; // Import the CSS file for styling
 import App from "../App";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 function PlayerInfo(props) {
-  const socket = props.socket;
+  const { socket } = props;
   const navigate = useNavigate();
+
   const [playerName, setPlayerName] = useState("");
   const [roomID, setRoomID] = useState("");
-  const [sym, setSym] = useState("");
- socket.emit("join_room", roomID);
- socket.emit("send_message", "hiii there");
- socket.on("your_symbol", (data) => {
-   console.log(data);
-   setSym(data);
- });
- socket.on("room_full", () => {
-   console.log("room full");
-   navigate("/room-full");
- });
-  const userInfo = {
-    playerName: playerName,
-    roomID: roomID,
-    sym: sym,
+  const [symbol, setSym] = useState("");
+
+  const handleYourSymbol = (data) => {
+    console.log(typeof data);
+    // Use the updated state directly here
+    console.log(data);
+    const userInfo = {
+      playerName,
+      roomID,
+      symbol: data,
+    };
+
+    navigate("/gameboard", {
+      state: { params: userInfo },
+    });
   };
+
+  useEffect(() => {
+    const handleRoomFull = () => {
+      console.log("Room full");
+      navigate("/room-full");
+    };
+
+    socket.on("room_full", handleRoomFull);
+
+    return () => {
+      // Clean up event listeners
+      socket.off("room_full", handleRoomFull);
+    };
+  }, [socket, navigate]);
+
   const joinRoom = () => {
-    if (playerName !== "" && roomID !== "") {
-      navigate("/gameboard", {
-        state: { params: userInfo },
-      });
+    if (playerName.trim() !== "" && roomID.trim() !== "") {
+      socket.emit("join_room", roomID);
+      socket.on("your_symbol", handleYourSymbol);
     }
   };
+
   return (
     <div className="player-info-container">
       <h1>Player Info</h1>
@@ -38,16 +53,12 @@ function PlayerInfo(props) {
       <input
         className="info-input"
         placeholder="Enter player name"
-        onChange={(e) => {
-          setPlayerName(e.target.value);
-        }}
+        onChange={(e) => setPlayerName(e.target.value)}
       />
       <input
         className="info-input"
         placeholder="Enter room ID"
-        onChange={(e) => {
-          setRoomID(e.target.value);
-        }}
+        onChange={(e) => setRoomID(e.target.value)}
       />
       <button className="start-button" onClick={joinRoom}>
         Start
