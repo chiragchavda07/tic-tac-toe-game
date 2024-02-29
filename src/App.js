@@ -1,5 +1,4 @@
 import "./App.css";
-import { useEffect, useState } from "react";
 import Gameboard from "./components/Gameboard";
 import PlayerInfo from "./pages/playerInfo";
 import WsService from "./services/websocket.service";

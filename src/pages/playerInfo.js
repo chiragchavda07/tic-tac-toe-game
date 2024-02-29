@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/playerInfo.css"; // Import the CSS file for styling
-import App from "../App";
 function PlayerInfo(props) {
   const { socket } = props;
   const navigate = useNavigate();
 
   const [playerName, setPlayerName] = useState("");
   const [roomID, setRoomID] = useState("");
-  const [symbol, setSym] = useState("");
 
   const handleYourSymbol = (data) => {
     console.log(typeof data);

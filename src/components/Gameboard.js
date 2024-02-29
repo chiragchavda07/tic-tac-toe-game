@@ -4,7 +4,7 @@ import "../styles/square.css";
 import "../styles/winning_crackers.css";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 function Gameboard(props) {
   const socket = props.socket;
@@ -12,14 +12,9 @@ function Gameboard(props) {
   const [playerName, setPlayerName] = useState("");
   const [roomID, setRoomID] = useState("");
   const location = useLocation();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   useEffect(
     () => {
-      const isRefreshed =
-        window.performance && window.performance.navigation.type === 1;
-      if (isRefreshed) {
-        navigate("/gameboard");
-      }
       document.getElementById("winner").style.display = "none";
       // Accessing userInfo object from location state
       const userInfo = location.state?.params;
@@ -51,9 +46,7 @@ function Gameboard(props) {
         // socket.disconnect();
       });
     },
-    [location.state],
-    socket,
-    navigate
+    [location.state,socket]
   );
 
   const squareComponents = [];
