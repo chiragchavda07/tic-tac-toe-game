@@ -1,6 +1,16 @@
 const express = require("express");
 const app = express();
 const http = require("http");
+
+//for https ssl certification
+// const https = require("https");
+// const fs = require("fs");
+// const options = {
+//   key: fs.readFileSync("key.pem"),
+//   cert: fs.readFileSync("cert.pem"),
+// };
+// const server = https.createServer();
+
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const cors = require("cors");
@@ -14,7 +24,7 @@ const io = new Server(server, {
 const GAMEBOARD_FOR_O = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 const GAMEBOARD_FOR_X = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 const MAX_CLIENTS_PER_ROOM = 2;
-const roomClients = {};
+let roomClients = {};
 const symbols = ["O", "X"];
 var symbol_assigning_index = 0;
 
@@ -69,6 +79,7 @@ io.on("connection", (socket) => {
       socket.emit("your_symbol", symbol);
     } else {
       socket.emit("room_full");
+      socket.disconnect();
       console.log(`Room ${room} is full`);
     }
   });
@@ -93,19 +104,24 @@ io.on("connection", (socket) => {
     if (checkWinner(data.info.symbol, data.info.index, data.info.socket_id)) {
       //if player with socket id= socket_id wins
       await io.to(data.roomID).emit("game_over", data.info.socket_id);
+      socket.disconnect();
     }
   });
+
   socket.on("disconnect", () => {
-    // Remove the disconnected user from the roomClients array
-    for (const room in roomClients) {
-      roomClients[room] = roomClients[room].filter((id) => id !== socket.id);
-    }
+    console.log(`User ${socket.id} disconnected`);
+    GAMEBOARD_FOR_O.splice(0, GAMEBOARD_FOR_O.length);
+    GAMEBOARD_FOR_X.splice(0, GAMEBOARD_FOR_X.length);
+    console.log("GAMEBOARD_FOR_O : ", GAMEBOARD_FOR_O);
+    console.log("GAMEBOARD_FOR_X : ", GAMEBOARD_FOR_X);
+    roomClients = {};
+    console.log("roomClients : ", roomClients);
   });
 });
 
 const PORT = 3001;
-// const HOST = "203.129.213.194";
-const HOST = "0.0.0.0";
+const HOST = "192.168.1.135";
+// const HOST = "0.0.0.0";
 server.listen(PORT, HOST, () => {
   console.log("server is listening on IP : " + HOST + " and port: " + PORT);
 });

@@ -48,6 +48,7 @@ function Gameboard(props) {
         } else {
           document.getElementById("status").innerText = "Sorry! You lost";
         }
+        // socket.disconnect();
       });
     },
     [location.state],
