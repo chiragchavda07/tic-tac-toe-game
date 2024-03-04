@@ -1,0 +1,58 @@
+.player-info-container {
+  margin-top:100px;
+  text-align: center;
+  padding: 20px;
+  border: 2px solid #3498db;
+  border-radius: 10px;
+  background-color: #ecf0f1;
+  max-width: 400px;
+  margin : 200px auto;
+}
+
+h1 {
+  color: #3498db;
+}
+
+h2 {
+  color: #2c3e50;
+}
+
+.info-input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  border: 1px solid #bdc3c7;
+  border-radius: 5px;
+}
+
+.start-button {
+  background-color: #2ecc71;
+  color: white;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.start-button:hover {
+  background-color: #27ae60;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+  .player-info-container {
+    margin: 20px;
+    padding: 15px;
+  }
+
+  .info-input {
+    padding: 10px;
+  }
+
+  .start-button {
+    padding: 10px 15px;
+  }
+}
