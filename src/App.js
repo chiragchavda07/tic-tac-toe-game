@@ -17,15 +17,15 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/construction" element={<Construction />} />
+          {/* <Route path="/construction" element={<Construction />} />
           <Route path="*" element={<Navigate to="/construction" />} />
-          <Route path="/" element={<Construction />} />
+          <Route path="/" element={<Construction />} /> */}
 
-          {/* <Route path="/service" element={<WsService />} />
+          <Route path="/service" element={<WsService />} />
           <Route path="/gameboard" element={<Gameboard socket={socket} />} />
           <Route path="/" element={<PlayerInfo socket={socket} />} />
           <Route path="*" element={<Navigate to="/service" />} />
-          <Route path="/room-full" element={<RoomFull />} /> */}
+          <Route path="/room-full" element={<RoomFull />} />
         </Routes>
       </div>
     </Router>
