@@ -7,92 +7,114 @@ import { useLocation } from "react-router-dom";
 // import { useNavigate } from "react-router-dom";
 
 function Gameboard(props) {
-  const socket = props.socket;
-  const [symbol, setSymbol] = useState(null);
-  const [playerName, setPlayerName] = useState("");
-  const [roomID, setRoomID] = useState("");
   const location = useLocation();
-  // const navigate = useNavigate();
-  useEffect(
-    () => {
-      document.getElementById("winner").style.display = "none";
-      // Accessing userInfo object from location state
-      const userInfo = location.state?.params;
-      if (userInfo) {
-        // Now you have access to the userInfo object
-        console.log("User Information:", userInfo);
-        // Extracting individual properties
-        const { playerName, roomID, symbol } = userInfo;
-        setPlayerName(playerName);
-        setRoomID(roomID);
-        setSymbol(symbol);
-      }
-      socket.on("player_turn", (data) => {
-        document.getElementById("status").innerText = "Your Turn";
-        enableAllButtons();
-        document.getElementById(data.index).disabled = true;
-        document.getElementById(data.index).innerText = data.symbol;
-        console.log("player turn: ", data);
-      });
-      socket.on("game_over", (winner_socket_id) => {
-        disableAllButtons();
-        if (socket.id === winner_socket_id) {
-          document.getElementById("status").innerText =
-            "Congratulations! You won";
-          document.getElementById("winner").style.display = "block";
-        } else {
-          document.getElementById("status").innerText = "Sorry! You lost";
-        }
-        // socket.disconnect();
-      });
-    },
-    [location.state,socket]
-  );
-
+  const socket = props.socket;
+  const symbol = location.state?.params.symbol;
+  const playerName = location.state?.params.playerName;
+  const roomID = location.state?.params.roomID;
+  const [checkedButtons, setCheckedButtons] = useState([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
   const squareComponents = [];
   for (let index = 0; index < 9; index++) {
     squareComponents.push(
       <button
         id={index}
-        disabled={false}
-        className="square"
+        disabled={true}
+        className="overlay"
         onClick={() => handleClick(index)}
       ></button>
     );
   }
+
+  socket.on("start_game", (inititator_socket_id) => {
+    console.log("inititator_socket_id: ", inititator_socket_id);
+    if (inititator_socket_id === socket.id) {
+      document.getElementById("status").innerText = "Your Turn";
+      enableAllButtons();
+    } else {
+      document.getElementById("status").innerText =
+        "Wait for another player to move";
+      disableAllButtons();
+    }
+  });
+  useEffect(() => {
+    document.getElementById("winner").style.display = "none";
+    socket.on("player_turn", (data) => {
+      document.getElementById("status").innerText = "Your Turn";
+      document.getElementById(data.index).innerText = data.symbol;
+      var newcheckedButtons = [...checkedButtons];
+      newcheckedButtons[data.index] = true;
+      setCheckedButtons(newcheckedButtons);
+      enableAllButtons();
+    });
+    socket.on("game_over", (winner_socket_id) => {
+      console.log("game over");
+      disableAllButtons();
+      if (socket.id === winner_socket_id) {
+        document.getElementById("status").innerText =
+          "Congratulations! You won";
+        document.getElementById("winner").style.display = "block";
+      } else {
+        document.getElementById("status").innerText = "Sorry! You lost";
+      }
+    });
+  }, [socket, checkedButtons]);
+
+  function sendBoardData_to_server(index) {
+    console.log("sendBoardData_to_server room ID: ", roomID);
+    socket.emit("player_move", {
+      socket_id: socket.id,
+      index: index,
+      symbol: symbol,
+      roomID: roomID,
+    });
+  }
+  function handleClick(event) {
+    var index  =  Number(event.target.id);
+    console.log(typeof index);
+    var newcheckedButtons = [...checkedButtons];
+    newcheckedButtons[index] = true;
+    setCheckedButtons(newcheckedButtons);
+    document.getElementById(index).innerText = symbol;
+
+    document.getElementById(index).classList.remove("overlay");
+    document.getElementById(index).classList.add("overlay");
+    document.getElementById(index).style.cursor = "not-allowed";
+    document.getElementById(index).disabled = true;
+
+    sendBoardData_to_server(index);
+    document.getElementById("status").innerText =
+      "Wait for another player to move";
+    disableAllButtons();
+  }
+
   function disableAllButtons() {
     for (let index = 0; index < 9; index++) {
       document.getElementById(index).disabled = true;
       document.getElementById(index).classList.remove("square");
       document.getElementById(index).classList.add("overlay");
-      document.getElementsByClassName("gameboard").backgroundColor = "red";
+      document.getElementById(index).style.cursor = "not-allowed";
     }
   }
   function enableAllButtons() {
     for (let index = 0; index < 9; index++) {
-      document.getElementById(index).disabled = false;
-      document.getElementById(index).classList.add("square");
-      document.getElementById(index).classList.remove("overlay");
-      // document.getElementsByClassName("gameboard").backgroundColor = "red";
+      if (!checkedButtons[index]) {
+        document.getElementById(index).disabled = false;
+        document.getElementById(index).addEventListener("click", handleClick);
+        document.getElementById(index).classList.add("square");
+        document.getElementById(index).classList.remove("overlay");
+        document.getElementById(index).style.cursor = "pointer";
+      }
     }
-  }
-
-  //when user clicks his/her move, this function will be called
-  //it should disable all the buttons
-  //it should update the status to wait for another player to move
-  function sendBoardData_to_server(index) {
-    socket.emit("player_move", {
-      info: { socket_id: socket.id, index: index, symbol: symbol },
-      roomID: roomID,
-    });
-  }
-  function handleClick(index) {
-    document.getElementById(index).disabled = true;
-    document.getElementById(index).innerText = symbol;
-    sendBoardData_to_server(index);
-    document.getElementById("status").innerText =
-      "Wait for another player to move";
-    disableAllButtons();
   }
 
   return (
@@ -100,9 +122,9 @@ function Gameboard(props) {
       <div className="info">
         Hii {playerName}, You are in room {roomID}. Your symbol is {symbol}
       </div>
-      <div className="gameboard ">{squareComponents}</div>
-      <div id="status" className="info ">
-        Please make your move
+      <div className="gameboard">{squareComponents}</div>
+      <div id="status" className="info">
+        Waiting for opponent to join the room...
       </div>
       <div id="winner">
         <div className="firework"></div>
